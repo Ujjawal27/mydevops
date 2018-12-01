@@ -1,0 +1,45 @@
+---
+# AWS tasks are run 'locally'
+
+# Authentication details should be passed in as arguments or exported in the shell before running this playbook
+# Ideally they should be stored in Hashicorp's 'Vault'
+# e.g.
+# export AWS_ACCESS_KEY_ID='my-access-key123'
+# export AWS_SECRET_ACCESS_KEY='sekrit23418'
+#
+# Finally, run with `ansible-playbook provision-aws-mattermost.yml`
+
+- name: Provision EC2 and RDS infrastructure
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  # vars:
+  #   - aws_region: us-east-1
+  #   # A basic web security group that allows 22, 80, and 443 inbound
+  #   - security_group_id: "basic-web-1"
+
+  #   - web_instance_count: 1
+  #   - web_ami_id: "ami-40d28157"
+  #   - aws_pubkey_name: "tutorialinux-ansible"
+
+  #   - db_master_name: "mattermost-db"
+  #   - db_replica_name: "mattermost-replica"
+  #   - db_master_user: "mmuser"
+  #   - db_master_pass: "masterpassy"
+
+  tasks:
+    - name: Provision a database instance
+      rds:
+        command: create
+        instance_name: "{{ db_master_name }}"
+        db_engine: postgres
+        size: 10
+        instance_type: db.t2.micro
+        region: "{{ aws_region }}"
+        username: "{{ db_master_user }}"
+        password: "{{ db_master_pass }}"
+        tags:
+          Environment: prod
+          Application: mattermost
+      register: rdsmachines
+
